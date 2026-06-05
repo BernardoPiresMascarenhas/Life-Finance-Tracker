@@ -2,19 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react"; // 👈 Nova importação
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { getNavItems } from "./nav-config"; // 👈 Trocamos NAV_ITEMS por getNavItems
+import { getNavItems } from "./nav-config";
 
 export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { data: session } = useSession(); // 👈 Pega os dados do usuário logado
+  const { data: session } = useSession();
 
-  // 👈 Gera a lista de links permitidos passando o e-mail atual
-  const navItems = getNavItems(session?.user?.email); 
+  const navItems = getNavItems(session?.user?.email);
 
   return (
-    <nav className="flex flex-col gap-1 px-3">
+    <nav className="flex flex-col gap-2 px-4">
       {navItems.map((item) => {
         const active = pathname.startsWith(item.href);
         const Icon = item.icon;
@@ -24,13 +23,20 @@ export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              // 👇 Aumentamos padding, deixamos os cantos mais redondos e adicionamos animação
+              "group flex items-center gap-4 rounded-xl px-4 py-3 text-base font-medium transition-all duration-200",
               active
-                ? "bg-secondary text-foreground"
-                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                ? "bg-secondary text-foreground shadow-sm ring-1 ring-border/50" // Destaque maior para o item ativo
+                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground hover:translate-x-1" // Efeito de deslizar no hover
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon 
+              // 👇 Aumentamos o ícone de h-4 para h-5
+              className={cn(
+                "h-5 w-5 transition-colors duration-200",
+                active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+              )} 
+            />
             {item.title}
           </Link>
         );

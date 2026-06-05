@@ -91,7 +91,8 @@ export function ProjectDialog({
       : await createProject(values);
     setPending(false);
     if (result?.error) return toast.error(result.error);
-    toast.success(isEdit ? "Projeto atualizado." : "Projeto criado.");
+    // 👇 Mensagens de sucesso atualizadas
+    toast.success(isEdit ? "Serviço atualizado." : "Serviço criado.");
     setOpen(false);
     if (!isEdit) form.reset(toInput());
   }
@@ -101,14 +102,16 @@ export function ProjectDialog({
       {children}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Editar projeto" : "Novo projeto"}</DialogTitle>
+          {/* 👇 Título atualizado */}
+          <DialogTitle>{isEdit ? "Editar serviço" : "Novo serviço"}</DialogTitle>
           <DialogDescription>
             O valor recebido é controlado pelos recebimentos, não aqui.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome do projeto</Label>
+            {/* 👇 Label atualizada */}
+            <Label htmlFor="name">Nome do serviço</Label>
             <Input id="name" {...form.register("name")} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">

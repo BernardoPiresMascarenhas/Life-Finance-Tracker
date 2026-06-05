@@ -17,7 +17,7 @@ export type NavItem = {
 export const ALL_NAV_ITEMS: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Transações", href: "/transactions", icon: Wallet },
-  { title: "Freelances", href: "/freelances", icon: Briefcase },
+  { title: "Serviços", href: "/freelances", icon: Briefcase },
   { title: "Poker", href: "/poker", icon: Spade },
   { title: "Patrimônio", href: "/patrimonio", icon: TrendingUp },
 ];

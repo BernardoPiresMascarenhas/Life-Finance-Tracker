@@ -54,7 +54,8 @@ function ProjectActions({
     const result = await deleteProject(project.id);
     setDeleting(false);
     if (result?.error) return toast.error(result.error);
-    toast.success("Projeto excluído.");
+    // 👇 Atualizamos a notificação de sucesso
+    toast.success("Serviço excluído.");
     setConfirmOpen(false);
   }
 
@@ -106,7 +107,8 @@ function ProjectActions({
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir projeto?</AlertDialogTitle>
+            {/* 👇 Atualizamos o título do modal de exclusão */}
+            <AlertDialogTitle>Excluir serviço?</AlertDialogTitle>
             <AlertDialogDescription>
               &quot;{project.name}&quot; será removido. Os recebimentos já
               lançados nas finanças são mantidos.
@@ -139,11 +141,12 @@ export function ProjectsTable({
   clients: ClientOption[];
 }) {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-lg border bg-card">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead>Projeto</TableHead>
+            {/* 👇 Atualizamos o cabeçalho da coluna principal */}
+            <TableHead>Serviço</TableHead>
             <TableHead>Cliente</TableHead>
             <TableHead className="text-right">Total</TableHead>
             <TableHead className="text-right">Recebido</TableHead>

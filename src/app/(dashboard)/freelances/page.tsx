@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { Clock, CheckCircle, Briefcase } from "lucide-react";
+
 import { prisma } from "@/lib/prisma";
 import { formatBRL } from "@/lib/format";
 import type {
@@ -12,7 +14,6 @@ import { FreelanceView } from "@/features/freelance/freelance-view";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function FreelancesPage() {
-  // 👇 1. Descobre quem está acessando a página
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -20,10 +21,9 @@ export default async function FreelancesPage() {
     redirect("/login");
   }
 
-  // 👇 2. Busca apenas os dados vinculados a esse usuário!
   const [projectsRaw, clientsRaw] = await Promise.all([
     prisma.project.findMany({
-      where: { userId: userId }, // 👈 O Filtro Mágico dos Projetos
+      where: { userId: userId }, 
       orderBy: { createdAt: "desc" },
       include: {
         client: { select: { name: true } },
@@ -35,7 +35,7 @@ export default async function FreelancesPage() {
       },
     }),
     prisma.client.findMany({
-      where: { userId: userId }, // 👈 O Filtro Mágico dos Clientes
+      where: { userId: userId }, 
       orderBy: { name: "asc" },
       include: { _count: { select: { projects: true } } },
     }),
@@ -70,7 +70,6 @@ export default async function FreelancesPage() {
     projectCount: c._count.projects,
   }));
 
-  // Agregados
   const totalReceived = projects.reduce((s, p) => s + p.receivedValue, 0);
   const totalPending = projects
     .filter((p) => p.status === "IN_PROGRESS" || p.status === "PAUSED")
@@ -80,18 +79,38 @@ export default async function FreelancesPage() {
   ).length;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <SummaryCard label="A receber" value={totalPending} accent="text-amber-500" />
+    <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
+      
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight">Serviços</h1>
+        <p className="text-muted-foreground">
+          Gerencie seus serviços prestados, contratos e clientes.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-3">
+        <SummaryCard 
+          label="A receber" 
+          value={totalPending} 
+          accent="text-amber-500" 
+          icon={<Clock className="h-5 w-5 text-amber-500" />}
+        />
         <SummaryCard
           label="Total recebido"
           value={totalReceived}
           accent="text-emerald-500"
+          icon={<CheckCircle className="h-5 w-5 text-emerald-500" />}
         />
-        <CountCard label="Projetos ativos" value={activeCount} />
+        <CountCard 
+          label="Serviços ativos" 
+          value={activeCount} 
+          icon={<Briefcase className="h-5 w-5 text-blue-500" />}
+        />
       </div>
 
+      {/* 👇 A correção está aqui! Removida a div que envelopava o componente */}
       <FreelanceView projects={projects} clients={clients} />
+      
     </div>
   );
 }
@@ -99,30 +118,60 @@ export default async function FreelancesPage() {
 function SummaryCard({
   label,
   value,
+  icon,
   accent = "text-foreground",
 }: {
   label: string;
   value: number;
+  icon: React.ReactNode;
   accent?: string;
 }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className={`mt-1 text-2xl font-semibold tabular-nums ${accent}`}>
-          {formatBRL(value)}
-        </p>
+    <Card className="hover:shadow-md transition-shadow duration-200">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between space-y-0 pb-2">
+          <p className="text-sm font-medium text-muted-foreground tracking-tight">
+            {label}
+          </p>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50">
+            {icon}
+          </div>
+        </div>
+        <div>
+          <p className={`text-3xl font-bold tracking-tight tabular-nums ${accent}`}>
+            {formatBRL(value)}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-function CountCard({ label, value }: { label: string; value: number }) {
+function CountCard({ 
+  label, 
+  value, 
+  icon 
+}: { 
+  label: string; 
+  value: number;
+  icon: React.ReactNode;
+}) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+    <Card className="hover:shadow-md transition-shadow duration-200">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between space-y-0 pb-2">
+          <p className="text-sm font-medium text-muted-foreground tracking-tight">
+            {label}
+          </p>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50">
+            {icon}
+          </div>
+        </div>
+        <div>
+          <p className="text-3xl font-bold tracking-tight tabular-nums">
+            {value}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
