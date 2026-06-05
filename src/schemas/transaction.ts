@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/categories";
+// 👇 Atualizamos as importações para pegar as listas completas
+import { ALL_INCOME_CATEGORIES, ALL_EXPENSE_CATEGORIES } from "@/lib/categories";
 
 export const transactionSchema = z
   .object({
@@ -13,8 +14,10 @@ export const transactionSchema = z
     note: z.string().trim().max(500).optional().or(z.literal("")),
   })
   .superRefine((data, ctx) => {
+    // 👇 A validação de segurança bate contra a lista matriz
     const allowed: readonly string[] =
-      data.type === "INCOME" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+      data.type === "INCOME" ? ALL_INCOME_CATEGORIES : ALL_EXPENSE_CATEGORIES;
+    
     if (!allowed.includes(data.category)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

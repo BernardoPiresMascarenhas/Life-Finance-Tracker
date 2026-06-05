@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSession } from "next-auth/react"; // 👈 Importamos o useSession
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 import { transactionSchema, type TransactionInput } from "@/schemas/transaction";
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/categories";
+// 👇 Importamos as novas funções de filtro em vez das listas estáticas
+import { getIncomeCategories, getExpenseCategories } from "@/lib/categories";
 import { createTransaction, updateTransaction } from "@/actions/transactions";
 import type { TransactionRow } from "./types";
 
@@ -31,9 +33,9 @@ import {
 } from "@/components/ui/select";
 
 type Props = {
-  children?: React.ReactNode; // trigger (modo não-controlado)
-  transaction?: TransactionRow; // presente = modo edição
-  open?: boolean; // modo controlado
+  children?: React.ReactNode;
+  transaction?: TransactionRow;
+  open?: boolean;
   onOpenChange?: (open: boolean) => void;
 };
 
@@ -54,6 +56,8 @@ export function TransactionDialog({
   open,
   onOpenChange,
 }: Props) {
+  const { data: session } = useSession(); // 👈 Pegamos a sessão do usuário
+
   const isEdit = !!transaction;
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
@@ -66,7 +70,11 @@ export function TransactionDialog({
   });
 
   const type = form.watch("type");
-  const categories = type === "INCOME" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  
+  // 👇 Filtramos as categorias passando o e-mail do usuário logado
+  const categories = type === "INCOME" 
+    ? getIncomeCategories(session?.user?.email) 
+    : getExpenseCategories(session?.user?.email);
 
   function setOpen(next: boolean) {
     if (isControlled) onOpenChange?.(next);

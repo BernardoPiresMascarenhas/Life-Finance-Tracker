@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react"; // 👈 Nova importação
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "./nav-config";
+import { getNavItems } from "./nav-config"; // 👈 Trocamos NAV_ITEMS por getNavItems
 
 export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { data: session } = useSession(); // 👈 Pega os dados do usuário logado
+
+  // 👈 Gera a lista de links permitidos passando o e-mail atual
+  const navItems = getNavItems(session?.user?.email); 
 
   return (
     <nav className="flex flex-col gap-1 px-3">
-      {NAV_ITEMS.map((item) => {
+      {navItems.map((item) => {
         const active = pathname.startsWith(item.href);
         const Icon = item.icon;
         return (

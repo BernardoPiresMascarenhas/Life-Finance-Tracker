@@ -1,7 +1,5 @@
-// Categorias mantidas em código (não como enum no banco) para você
-// adicionar/remover sem precisar de migration.
-
-export const INCOME_CATEGORIES = [
+// Categorias base mantidas para os tipos do TypeScript
+export const ALL_INCOME_CATEGORIES = [
   "Salário",
   "Freelance",
   "Poker",
@@ -9,7 +7,7 @@ export const INCOME_CATEGORIES = [
   "Outros",
 ] as const;
 
-export const EXPENSE_CATEGORIES = [
+export const ALL_EXPENSE_CATEGORIES = [
   "Alimentação",
   "Transporte",
   "Moradia",
@@ -22,5 +20,23 @@ export const EXPENSE_CATEGORIES = [
   "Outros",
 ] as const;
 
-export type IncomeCategory = (typeof INCOME_CATEGORIES)[number];
-export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
+export type IncomeCategory = (typeof ALL_INCOME_CATEGORIES)[number];
+export type ExpenseCategory = (typeof ALL_EXPENSE_CATEGORIES)[number];
+
+// Função para filtrar Receitas
+export function getIncomeCategories(userEmail?: string | null) {
+  // Se for o seu e-mail, retorna todas as categorias
+  if (userEmail === "bernardomasca3008@gmail.com") {
+    return ALL_INCOME_CATEGORIES;
+  }
+  // Se for cliente, tira o Poker da lista
+  return ALL_INCOME_CATEGORIES.filter((cat) => cat !== "Poker");
+}
+
+// Função para filtrar Despesas
+export function getExpenseCategories(userEmail?: string | null) {
+  if (userEmail === "bernardomasca3008@gmail.com") {
+    return ALL_EXPENSE_CATEGORIES;
+  }
+  return ALL_EXPENSE_CATEGORIES.filter((cat) => cat !== "Poker");
+}

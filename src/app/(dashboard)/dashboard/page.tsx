@@ -22,13 +22,16 @@ const monthKeyFmt = new Intl.DateTimeFormat("pt-BR", {
 });
 
 export default async function DashboardPage() {
-  // 👇 1. Pega o ID do usuário logado
   const session = await auth();
   const userId = session?.user?.id;
+  const userEmail = session?.user?.email; // 👈 Pegamos o e-mail
 
   if (!userId) {
     redirect("/login");
   }
+
+  // 👇 Verificamos se é a sua conta de administrador
+  const isAdmin = userEmail === "bernardomasca3008@gmail.com";
 
   // últimos 12 meses de transações para o fluxo de caixa
   const since = new Date();
@@ -38,16 +41,13 @@ export default async function DashboardPage() {
 
   const [cashBalance, receivables, bankroll, lastSnapshot, transactions] =
     await Promise.all([
-      // 👇 Passamos o userId para as funções de métricas calcularem certo
       getCashBalance(userId),
       getReceivables(userId),
-      getPokerBankroll(userId),
-      // 👇 Filtramos o patrimônio para ser só do usuário
+      getPokerBankroll(userId), 
       prisma.netWorthSnapshot.findFirst({ 
         where: { userId: userId },
         orderBy: { date: "desc" } 
       }),
-      // 👇 Filtramos o gráfico para mostrar só as transações do usuário
       prisma.transaction.findMany({
         where: { 
           userId: userId, 
@@ -83,7 +83,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      {/* 👇 Grid dinâmico: 4 colunas pra você, 3 colunas para os clientes */}
+      <div className={`grid gap-3 grid-cols-2 ${isAdmin ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
         <Metric
           icon={<Wallet className="h-4 w-4" />}
           label="Saldo em caixa"
@@ -96,12 +97,17 @@ export default async function DashboardPage() {
           value={formatBRL(receivables)}
           accent="text-amber-500"
         />
-        <Metric
-          icon={<Spade className="h-4 w-4" />}
-          label="Bankroll (poker)"
-          value={formatBRL(bankroll)}
-          accent={bankroll >= 0 ? "text-emerald-500" : "text-destructive"}
-        />
+        
+        {/* 👇 O Card do Poker só é renderizado na tela se for você */}
+        {isAdmin && (
+          <Metric
+            icon={<Spade className="h-4 w-4" />}
+            label="Bankroll (poker)"
+            value={formatBRL(bankroll)}
+            accent={bankroll >= 0 ? "text-emerald-500" : "text-destructive"}
+          />
+        )}
+
         <Metric
           icon={<TrendingUp className="h-4 w-4" />}
           label="Patrimônio"

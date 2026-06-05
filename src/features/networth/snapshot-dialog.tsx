@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSession } from "next-auth/react"; // 👈 Importamos o useSession
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -27,7 +28,6 @@ import {
 type Props = {
   children?: React.ReactNode;
   snapshot?: SnapshotRow;
-  // valores atuais derivados dos outros módulos (pré-preenchem um snapshot novo)
   prefillReceivables?: number;
   prefillBankroll?: number;
   open?: boolean;
@@ -59,6 +59,10 @@ export function SnapshotDialog({
   open,
   onOpenChange,
 }: Props) {
+  // 👇 Pegamos a sessão e validamos se é a sua conta
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.email === "bernardomasca3008@gmail.com";
+
   const isEdit = !!snapshot;
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
@@ -81,6 +85,11 @@ export function SnapshotDialog({
 
   async function onSubmit(values: SnapshotInput) {
     setPending(true);
+    // Para clientes comuns, garantimos que a banca vá zerada pro banco
+    if (!isAdmin) {
+      values.pokerBankroll = 0;
+    }
+
     const result = isEdit
       ? await updateSnapshot(snapshot!.id, values)
       : await createSnapshot(values);
@@ -93,13 +102,14 @@ export function SnapshotDialog({
   }
 
   const w = form.watch();
+  // 👇 O cálculo do total só soma a banca de poker se for você
   const total =
     (Number(w.checkingAccount) || 0) +
     (Number(w.investments) || 0) +
     (Number(w.crypto) || 0) +
     (Number(w.otherAssets) || 0) +
     (Number(w.receivables) || 0) +
-    (Number(w.pokerBankroll) || 0);
+    (isAdmin ? Number(w.pokerBankroll) || 0 : 0);
 
   const dateValue = (() => {
     const d = form.watch("date");
@@ -116,8 +126,11 @@ export function SnapshotDialog({
             {isEdit ? "Editar snapshot" : "Novo snapshot"}
           </DialogTitle>
           <DialogDescription>
-            Fotografia do seu patrimônio nesta data. A receber e a banca já
-            vêm preenchidos com o valor atual — ajuste se quiser.
+            Fotografia do seu patrimônio nesta data.{" "}
+            {/* 👇 Texto dinâmico dependendo de quem acessa */}
+            {isAdmin 
+              ? "A receber e a banca já vêm preenchidos com o valor atual — ajuste se quiser." 
+              : "Os valores a receber já vêm preenchidos com o valor atual — ajuste se quiser."}
           </DialogDescription>
         </DialogHeader>
 
@@ -138,7 +151,11 @@ export function SnapshotDialog({
             <MoneyField form={form} name="crypto" label="Cripto" />
             <MoneyField form={form} name="otherAssets" label="Espécie / outros" />
             <MoneyField form={form} name="receivables" label="A receber" />
-            <MoneyField form={form} name="pokerBankroll" label="Banca (poker)" />
+            
+            {/* 👇 O campo só é desenhado na tela se for administrador */}
+            {isAdmin && (
+              <MoneyField form={form} name="pokerBankroll" label="Banca (poker)" />
+            )}
           </div>
 
           <div className="flex items-center justify-between rounded-md border bg-secondary/40 px-3 py-2">
@@ -171,7 +188,6 @@ function MoneyField({
   name,
   label,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any;
   name: keyof SnapshotInput;
   label: string;
