@@ -79,16 +79,18 @@ export default async function FreelancesPage() {
   ).length;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
+    // 👇 Espaçamento dinâmico: space-y-6 no mobile, space-y-8 no PC
+    <div className="mx-auto max-w-7xl space-y-6 md:space-y-8 p-4 md:p-8">
       
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">Serviços</h1>
-        <p className="text-muted-foreground">
+        {/* 👇 Fontes adaptáveis no cabeçalho */}
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Serviços</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Gerencie seus serviços prestados, contratos e clientes.
         </p>
       </div>
 
-      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-3">
+      <div className="grid gap-3 md:gap-6 grid-cols-1 sm:grid-cols-3">
         <SummaryCard 
           label="A receber" 
           value={totalPending} 
@@ -108,13 +110,13 @@ export default async function FreelancesPage() {
         />
       </div>
 
-      {/* 👇 A correção está aqui! Removida a div que envelopava o componente */}
       <FreelanceView projects={projects} clients={clients} />
       
     </div>
   );
 }
 
+// 👇 Componentes ajustados para mobile
 function SummaryCard({
   label,
   value,
@@ -128,17 +130,20 @@ function SummaryCard({
 }) {
   return (
     <Card className="hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-6">
+      {/* 👇 Padding responsivo */}
+      <CardContent className="p-4 md:p-6">
         <div className="flex items-center justify-between space-y-0 pb-2">
           <p className="text-sm font-medium text-muted-foreground tracking-tight">
             {label}
           </p>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50">
+          {/* 👇 Ícone levemente menor no celular */}
+          <div className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-secondary/50">
             {icon}
           </div>
         </div>
         <div>
-          <p className={`text-3xl font-bold tracking-tight tabular-nums ${accent}`}>
+          {/* 👇 Texto do valor responsivo */}
+          <p className={`text-2xl md:text-3xl font-bold tracking-tight tabular-nums ${accent}`}>
             {formatBRL(value)}
           </p>
         </div>
@@ -158,17 +163,17 @@ function CountCard({
 }) {
   return (
     <Card className="hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="flex items-center justify-between space-y-0 pb-2">
           <p className="text-sm font-medium text-muted-foreground tracking-tight">
             {label}
           </p>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50">
+          <div className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-secondary/50">
             {icon}
           </div>
         </div>
         <div>
-          <p className="text-3xl font-bold tracking-tight tabular-nums">
+          <p className="text-2xl md:text-3xl font-bold tracking-tight tabular-nums">
             {value}
           </p>
         </div>

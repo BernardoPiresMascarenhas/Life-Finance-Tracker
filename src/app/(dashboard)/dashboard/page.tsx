@@ -78,18 +78,18 @@ export default async function DashboardPage() {
   const patrimonio = lastSnapshot ? Number(lastSnapshot.total) : null;
 
   return (
-    // Mudei para max-w-7xl para deixar o dashboard bem mais largo na tela
-    <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
+    // Ajuste no gap principal: um pouco menor no mobile (space-y-6) e maior no desktop (md:space-y-8)
+    <div className="mx-auto max-w-7xl space-y-6 md:space-y-8 p-4 md:p-8">
       
-      {/* Cabeçalho da página para dar um ar mais profissional */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">Visão Geral</h1>
-        <p className="text-muted-foreground">
+        {/* Título responsivo */}
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Acompanhe suas finanças e fluxo de caixa.
         </p>
       </div>
 
-      <div className={`grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 ${isAdmin ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+      <div className={`grid gap-3 md:gap-6 grid-cols-1 sm:grid-cols-2 ${isAdmin ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
         <Metric
           icon={<Wallet className="h-5 w-5 text-blue-500" />}
           label="Saldo em caixa"
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
           icon={<Clock className="h-5 w-5 text-amber-500" />}
           label="A receber"
           value={formatBRL(receivables)}
-          accent="text-foreground" // Deixando a cor base, focando o amarelo no ícone
+          accent="text-foreground"
         />
         
         {isAdmin && (
@@ -122,13 +122,14 @@ export default async function DashboardPage() {
 
       <Card className="hover:shadow-sm transition-shadow duration-200">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold">
+          <CardTitle className="text-base md:text-lg font-semibold">
             Fluxo de caixa — últimos 12 meses
           </CardTitle>
         </CardHeader>
-        {/* Aumentei a altura e o padding do card do gráfico */}
-        <CardContent className="pt-2 pb-6 px-6">
-          <div className="h-[350px] w-full">
+        {/* Padding interno adaptado para não espremer o gráfico no celular */}
+        <CardContent className="pt-2 pb-4 px-4 md:pb-6 md:px-6">
+          {/* Altura responsiva: 250px celular / 350px PC */}
+          <div className="h-[250px] md:h-[350px] w-full">
             <CashflowChart data={cashflow} />
           </div>
         </CardContent>
@@ -137,7 +138,6 @@ export default async function DashboardPage() {
   );
 }
 
-// Novo design do card, inspirado em grandes ferramentas como Vercel e Stripe
 function Metric({
   icon,
   label,
@@ -151,17 +151,19 @@ function Metric({
 }) {
   return (
     <Card className="hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-6">
+      {/* P-4 no mobile para ganhar espaço, P-6 no desktop para elegância */}
+      <CardContent className="p-4 md:p-6">
         <div className="flex items-center justify-between space-y-0 pb-2">
           <p className="text-sm font-medium text-muted-foreground tracking-tight">
             {label}
           </p>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50">
+          <div className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-secondary/50">
             {icon}
           </div>
         </div>
         <div>
-          <p className={`text-3xl font-bold tracking-tight tabular-nums ${accent ?? ""}`}>
+          {/* Texto menor no mobile para não quebrar a linha com números grandes */}
+          <p className={`text-2xl md:text-3xl font-bold tracking-tight tabular-nums ${accent ?? ""}`}>
             {value}
           </p>
         </div>

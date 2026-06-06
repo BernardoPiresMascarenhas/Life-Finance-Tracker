@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, Spade, LogOut } from "lucide-react";
+import { useSession } from "next-auth/react"; // 👈 Importamos o useSession
+import { Menu, Spade, Wallet, LogOut } from "lucide-react"; // 👈 Adicionamos a Wallet
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,10 @@ export function AppHeader({ userLabel }: { userLabel: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  // 👇 Validamos se o usuário atual é a sua conta de administrador
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.email === "bernardomasca3008@gmail.com";
+
   return (
     <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
       <div className="flex items-center gap-2">
@@ -34,7 +39,12 @@ export function AppHeader({ userLabel }: { userLabel: string }) {
           <SheetContent side="left" className="w-60 p-0">
             <SheetHeader className="h-14 flex-row items-center gap-2 border-b px-5">
               <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <Spade className="h-4 w-4" />
+                {/* 👇 Renderização condicional: Espada para você, Carteira para o cliente */}
+                {isAdmin ? (
+                  <Spade className="h-4 w-4" />
+                ) : (
+                  <Wallet className="h-4 w-4" />
+                )}
               </div>
               <SheetTitle className="text-sm font-semibold">
                 Finance Tracker

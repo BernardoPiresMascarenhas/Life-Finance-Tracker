@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { Plus, TrendingUp } from "lucide-react";
+import { Plus, TrendingUp, Landmark } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { getReceivables, getPokerBankroll } from "@/services/metrics";
@@ -20,7 +20,6 @@ const monthLabel = new Intl.DateTimeFormat("pt-BR", {
 });
 
 export default async function PatrimonioPage() {
-  // 👇 1. Pega o ID do usuário logado
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -28,14 +27,13 @@ export default async function PatrimonioPage() {
     redirect("/login");
   }
 
-  // 👇 2. Busca o patrimônio apenas deste usuário e passa o ID para as métricas
   const [snapshotsAsc, receivables, bankroll] = await Promise.all([
     prisma.netWorthSnapshot.findMany({ 
-      where: { userId: userId }, // 👈 Filtro Mágico!
+      where: { userId: userId }, 
       orderBy: { date: "asc" } 
     }),
-    getReceivables(userId), // 👈 Passando o ID para a função matemática
-    getPokerBankroll(userId), // 👈 Passando o ID para a função matemática
+    getReceivables(userId), 
+    getPokerBankroll(userId), 
   ]);
 
   const asc: SnapshotRow[] = snapshotsAsc.map((s) => ({
@@ -65,61 +63,100 @@ export default async function PatrimonioPage() {
     current !== null && previous !== null ? current - previous : null;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex items-center justify-between">
-        <Card className="w-auto">
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Patrimônio atual</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">
-              {current === null ? "—" : formatBRL(current)}
-            </p>
-            {delta !== null && (
-              <p
-                className={`text-xs tabular-nums ${
-                  delta >= 0 ? "text-emerald-500" : "text-destructive"
-                }`}
-              >
-                {delta >= 0 ? "▲" : "▼"} {formatBRL(Math.abs(delta))} vs. anterior
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <SnapshotDialog
-          prefillReceivables={receivables}
-          prefillBankroll={bankroll}
-        >
+    <div className="mx-auto max-w-7xl space-y-6 md:space-y-8 p-4 md:p-8">
+      
+      {/* Cabeçalho Responsivo */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Patrimônio</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
+            Acompanhe a evolução da sua riqueza ao longo dos meses.
+          </p>
+        </div>
+        
+        <SnapshotDialog prefillReceivables={receivables} prefillBankroll={bankroll}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" /> Novo snapshot
             </Button>
           </DialogTrigger>
         </SnapshotDialog>
       </div>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            Evolução do patrimônio
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {hasData ? (
-            <NetWorthChart data={chartData} />
-          ) : (
-            <div className="flex h-[260px] flex-col items-center justify-center gap-3 text-center">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary">
-                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+      {/* Grid para o Card de Resumo (pode adicionar mais cards no futuro se quiser) */}
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-3">
+        <Card className="hover:shadow-md transition-shadow duration-200 sm:col-span-1">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <p className="text-sm font-medium text-muted-foreground tracking-tight">
+                Patrimônio atual
+              </p>
+              <div className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-secondary/50">
+                <Landmark className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Registre seu primeiro snapshot ao fim do mês.
+            </div>
+            <div>
+              <p className="text-2xl md:text-3xl font-bold tracking-tight tabular-nums">
+                {current === null ? "—" : formatBRL(current)}
+              </p>
+              {delta !== null && (
+                <p
+                  className={`mt-1 text-sm font-medium tabular-nums ${
+                    delta >= 0 ? "text-emerald-500" : "text-destructive"
+                  }`}
+                >
+                  {delta >= 0 ? "▲" : "▼"} {formatBRL(Math.abs(delta))} vs. mês anterior
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gráfico e Tabela */}
+      {hasData ? (
+        <div className="space-y-6 md:space-y-8">
+          <Card className="hover:shadow-sm transition-shadow duration-200">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base md:text-lg font-semibold">
+                Evolução do patrimônio
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2 pb-4 px-4 md:pb-6 md:px-6">
+              <div className="h-[250px] md:h-[350px] w-full">
+                <NetWorthChart data={chartData} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+            <SnapshotsTable rows={rows} />
+          </div>
+        </div>
+      ) : (
+        <Card className="border-dashed shadow-none">
+          <CardContent className="flex flex-col items-center justify-center gap-3 py-24 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/80">
+              <TrendingUp className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-lg font-medium">Nenhum registro ainda</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Registre o seu primeiro snapshot (fotografia financeira) para começar o gráfico.
               </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {hasData && <SnapshotsTable rows={rows} />}
+            <div className="mt-4">
+              <SnapshotDialog prefillReceivables={receivables} prefillBankroll={bankroll}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Plus className="mr-2 h-4 w-4" /> Novo snapshot
+                  </Button>
+                </DialogTrigger>
+              </SnapshotDialog>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

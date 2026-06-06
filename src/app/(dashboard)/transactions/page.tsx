@@ -63,33 +63,37 @@ export default async function TransactionsPage({
   const balance = income - expense;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
+    // 👇 Espaçamento dinâmico: space-y-6 no mobile, space-y-8 no PC
+    <div className="mx-auto max-w-7xl space-y-6 md:space-y-8 p-4 md:p-8">
       
-      {/* 👇 Cabeçalho no mesmo padrão do Dashboard */}
+      {/* Cabeçalho Responsivo */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">Transações</h1>
-          <p className="text-muted-foreground">
+          {/* 👇 Fontes adaptáveis */}
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Transações</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Gerencie suas receitas e despesas do mês.
           </p>
         </div>
         
-        {/* Filtro e Botão alinhados lado a lado */}
-        <div className="flex items-center gap-3">
-          <MonthFilter defaultMonth={currentMonth()} />
+        {/* Filtro e Botão alinhados e ajustáveis no mobile */}
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex-1 sm:flex-none">
+            <MonthFilter defaultMonth={currentMonth()} />
+          </div>
           <TransactionDialog>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="flex-1 sm:flex-none">
                 <Plus className="mr-2 h-4 w-4" />
-                Nova transação
+                <span className="hidden sm:inline">Nova transação</span>
+                <span className="sm:hidden">Nova</span>
               </Button>
             </DialogTrigger>
           </TransactionDialog>
         </div>
       </div>
 
-      {/* 👇 Cards atualizados com a mesma estrutura premium */}
-      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-3">
+      <div className="grid gap-3 md:gap-6 grid-cols-1 sm:grid-cols-3">
         <SummaryCard 
           label="Receitas" 
           value={income} 
@@ -110,7 +114,6 @@ export default async function TransactionsPage({
         />
       </div>
 
-      {/* Tabela ou Estado Vazio */}
       {rows.length === 0 ? (
         <Card className="border-dashed shadow-none">
           <CardContent className="flex flex-col items-center justify-center gap-3 py-24 text-center">
@@ -144,7 +147,7 @@ export default async function TransactionsPage({
   );
 }
 
-// 👇 O componente de Card foi totalmente reescrito para combinar com a "Metric" do Dashboard
+// 👇 Componente ajustado com padding, ícones e fontes responsivas
 function SummaryCard({
   label,
   value,
@@ -158,17 +161,17 @@ function SummaryCard({
 }) {
   return (
     <Card className="hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="flex items-center justify-between space-y-0 pb-2">
           <p className="text-sm font-medium text-muted-foreground tracking-tight">
             {label}
           </p>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50">
+          <div className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-secondary/50">
             {icon}
           </div>
         </div>
         <div>
-          <p className={`text-3xl font-bold tracking-tight tabular-nums ${accent}`}>
+          <p className={`text-2xl md:text-3xl font-bold tracking-tight tabular-nums ${accent}`}>
             {formatBRL(value)}
           </p>
         </div>
